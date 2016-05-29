@@ -69,10 +69,11 @@ public class LoginActivity extends AppCompatActivity {
                                     Log.i("INFO","Successful login");
                                     try {
 
+                                        System.out.println(json);
 
-                                        my_id = json.getString("id");
+                                        my_id = json.getString("id").toString();
                                         Intent intent = new Intent(getApplicationContext(),DisplayActivity.class);
-                                        intent.putExtra("my_id",my_id);
+                                        intent.putExtra("my_id", my_id);
                                         startActivity(intent);
 
                                     } catch (JSONException e) {

@@ -19,7 +19,11 @@ buildscript {
 allprojects {
     repositories {
         jcenter()
+        maven {
+            url 'http://p2pkit.io/maven2'
+        }
     }
+
 }
 
 task clean(type: Delete) {

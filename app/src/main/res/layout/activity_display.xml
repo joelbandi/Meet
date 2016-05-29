@@ -13,19 +13,8 @@
     <ListView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/listView"
+        android:id="@+id/lv"
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Your user _ID goes here"
-        android:id="@+id/tv"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"
-        android:textColor="#ffffff"
-        android:textStyle="bold"
-        android:typeface="monospace"
-        android:textSize="20sp" />
 </RelativeLayout>
