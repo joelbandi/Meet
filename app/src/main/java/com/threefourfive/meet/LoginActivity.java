@@ -53,7 +53,7 @@ public class LoginActivity extends AppCompatActivity {
 
 
     public void facebooklogin(){
-        LoginManager.getInstance().logInWithReadPermissions(this, Arrays.asList("email", "public_profile"));
+        LoginManager.getInstance().logInWithReadPermissions(this, Arrays.asList("email", "public_profile","user_friends"));
         LoginManager.getInstance().registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
@@ -70,7 +70,6 @@ public class LoginActivity extends AppCompatActivity {
                                     try {
 
                                         System.out.println(json);
-
                                         my_id = json.getString("id").toString();
                                         Intent intent = new Intent(getApplicationContext(),DisplayActivity.class);
                                         intent.putExtra("my_id", my_id);

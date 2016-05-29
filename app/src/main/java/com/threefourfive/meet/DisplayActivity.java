@@ -26,7 +26,7 @@ public class DisplayActivity extends AppCompatActivity {
 
     ListView lv;
     String my_id;
-    private static final String APP_KEY = "eyJzaWduYXR1cmUiOiJCYnZiSGI2SGw4b0h4OUdEbWxRU0VzQ0ZRUnorQzZLeHQzOFBGajRYV1JjZ1lwRU1RSmRhKzc4UjRsY0NHays3aTVtc0xSaWplZmlBaDI3WEhnaDJtVHhEOUNWRkxWSllISkVIMWFYQTB2VTd2eFF1NlJKcktJUFhlZGR5Z2NML0gyTXBEVWVSUmdCRHVhZ1pOUHJEN1JRRU9DNWhiRHNwTG92Q3gzWE40UTQ9IiwiYXBwSWQiOjE2MDYsInZhbGlkVW50aWwiOjE3MDIwLCJhcHBVVVVJRCI6IkFGMERGMDg5LUREMTUtNDcwOS05NEI3LUFEMjkxODQ5MkQwNiJ9";
+    private static final String P2P_APP_KEY = "eyJzaWduYXR1cmUiOiJCYnZiSGI2SGw4b0h4OUdEbWxRU0VzQ0ZRUnorQzZLeHQzOFBGajRYV1JjZ1lwRU1RSmRhKzc4UjRsY0NHays3aTVtc0xSaWplZmlBaDI3WEhnaDJtVHhEOUNWRkxWSllISkVIMWFYQTB2VTd2eFF1NlJKcktJUFhlZGR5Z2NML0gyTXBEVWVSUmdCRHVhZ1pOUHJEN1JRRU9DNWhiRHNwTG92Q3gzWE40UTQ9IiwiYXBwSWQiOjE2MDYsInZhbGlkVW50aWwiOjE3MDIwLCJhcHBVVVVJRCI6IkFGMERGMDg5LUREMTUtNDcwOS05NEI3LUFEMjkxODQ5MkQwNiJ9";
     List<String> cache;
     P2PKitClient client;
     String placeholder;
@@ -52,10 +52,10 @@ public class DisplayActivity extends AppCompatActivity {
         final StatusResult result = P2PKitClient.isP2PServicesAvailable(DisplayActivity.this);
         if(result.getStatusCode()== StatusResult.SUCCESS){
             client = P2PKitClient.getInstance(this);
-            client.enableP2PKit(callback, APP_KEY);
-            client.getDiscoveryServices().addP2pListener(listener);
             try {
                 client.getDiscoveryServices().setP2pDiscoveryInfo(my_id.getBytes());
+                client.enableP2PKit(callback, P2P_APP_KEY);
+                client.getDiscoveryServices().addP2pListener(listener);
             } catch (InfoTooLongException e) {
                 e.printStackTrace();
             }
@@ -110,8 +110,19 @@ public class DisplayActivity extends AppCompatActivity {
         public void onPeerDiscovered(Peer peer) {
             Toast.makeText(DisplayActivity.this,"onPeerDiscovered",Toast.LENGTH_SHORT).show();
             String result;
-            result = backendCall(new String(peer.getDiscoveryInfo()));
+            try {
+                result = backendCall(new String(peer.getDiscoveryInfo()));
+                            /*use of synchronous to prevent racearounds on different onPeerDiscovered threads*/
 
+                synchronized (cache){
+
+                    cache.add(result);
+                /* find a way to sort the cache now.*/
+
+                }
+            }catch (Exception e){
+                e.printStackTrace();
+            }
 
             /*We need to find a way to include the mutual likes information as well..possible a sortedmap implementation
 
@@ -121,13 +132,7 @@ public class DisplayActivity extends AppCompatActivity {
 
             */
 
-            /*use of synchronous to prevent racearounds on different onPeerDiscovered threads*/
-            synchronized (cache){
 
-                cache.add(result);
-                /* find a way to sort the cache now.*/
-
-            }
 
             lv.setAdapter(adapter);
         }
