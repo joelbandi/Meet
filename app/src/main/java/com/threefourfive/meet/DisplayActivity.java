@@ -3,6 +3,7 @@ package com.threefourfive.meet;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -53,8 +54,8 @@ public class DisplayActivity extends AppCompatActivity {
         if(result.getStatusCode()== StatusResult.SUCCESS){
             client = P2PKitClient.getInstance(this);
             try {
-                client.getDiscoveryServices().setP2pDiscoveryInfo(my_id.getBytes());
                 client.enableP2PKit(callback, P2P_APP_KEY);
+                client.getDiscoveryServices().setP2pDiscoveryInfo(my_id.getBytes());
                 client.getDiscoveryServices().addP2pListener(listener);
             } catch (InfoTooLongException e) {
                 e.printStackTrace();
@@ -139,12 +140,39 @@ public class DisplayActivity extends AppCompatActivity {
 
         @Override
         public void onPeerLost(Peer peer) {
-
+            cache.remove(new String(peer.getDiscoveryInfo()));
+            lv.setAdapter(adapter);
         }
 
         @Override
         public void onPeerUpdatedDiscoveryInfo(Peer peer) {
+            Toast.makeText(DisplayActivity.this,"onPeerDiscovered",Toast.LENGTH_SHORT).show();
+            String result;
+            try {
+                result = backendCall(new String(peer.getDiscoveryInfo()));
+                            /*use of synchronous to prevent racearounds on different onPeerDiscovered threads*/
 
+                synchronized (cache){
+
+                    cache.add(result);
+                /* find a way to sort the cache now.*/
+
+                }
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+
+            /*We need to find a way to include the mutual likes information as well..possible a sortedmap implementation
+
+                maybe even a separate profile class of our own and put each data class wrappper in a separate custom view based
+
+                ALSO GENERAL REFINEMENT IS IN ORDER...
+
+            */
+
+
+
+            lv.setAdapter(adapter);
         }
 
         @Override
@@ -162,7 +190,25 @@ public class DisplayActivity extends AppCompatActivity {
     }
 
 
+    public void P2Penable(){
 
+    }
+
+
+    public void refresh(View view){
+
+        client.getDiscoveryServices().removeAllP2pListener();
+        client.disableP2PKit();
+
+
+        client.enableP2PKit(callback,P2P_APP_KEY);
+        try {
+            client.getDiscoveryServices().setP2pDiscoveryInfo(my_id.getBytes());
+        } catch (InfoTooLongException e) {
+            e.printStackTrace();
+        }
+        client.getDiscoveryServices().addP2pListener(listener);
+    }
 
 
 

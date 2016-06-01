@@ -17,4 +17,15 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true" />
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="refresh"
+        android:id="@+id/refresh"
+        android:onClick="refresh"
+        android:textStyle="normal"
+        android:typeface="monospace"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true" />
+
 </RelativeLayout>
