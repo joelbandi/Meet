@@ -27,6 +27,7 @@ public class LoginActivity extends AppCompatActivity {
     String my_id;
     CallbackManager callbackManager;
     View facebookloginbutton;
+    String accesstoken;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +59,7 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onSuccess(LoginResult loginResult) {
 
+                accesstoken = loginResult.getAccessToken().getToken();
                 GraphRequest.newMeRequest(
                         loginResult.getAccessToken(), new GraphRequest.GraphJSONObjectCallback() {
                             @Override
@@ -73,6 +75,7 @@ public class LoginActivity extends AppCompatActivity {
                                         my_id = json.getString("id").toString();
                                         Intent intent = new Intent(getApplicationContext(),DisplayActivity.class);
                                         intent.putExtra("my_id", my_id);
+                                        intent.putExtra("accesstoken",accesstoken);
                                         startActivity(intent);
 
                                     } catch (JSONException e) {

@@ -8,6 +8,13 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -27,6 +34,7 @@ public class DisplayActivity extends AppCompatActivity {
 
     ListView lv;
     String my_id;
+    String accesstoken;
     private static final String P2P_APP_KEY = "eyJzaWduYXR1cmUiOiJCYnZiSGI2SGw4b0h4OUdEbWxRU0VzQ0ZRUnorQzZLeHQzOFBGajRYV1JjZ1lwRU1RSmRhKzc4UjRsY0NHays3aTVtc0xSaWplZmlBaDI3WEhnaDJtVHhEOUNWRkxWSllISkVIMWFYQTB2VTd2eFF1NlJKcktJUFhlZGR5Z2NML0gyTXBEVWVSUmdCRHVhZ1pOUHJEN1JRRU9DNWhiRHNwTG92Q3gzWE40UTQ9IiwiYXBwSWQiOjE2MDYsInZhbGlkVW50aWwiOjE3MDIwLCJhcHBVVVVJRCI6IkFGMERGMDg5LUREMTUtNDcwOS05NEI3LUFEMjkxODQ5MkQwNiJ9";
     List<String> cache;
     P2PKitClient client;
@@ -41,6 +49,7 @@ public class DisplayActivity extends AppCompatActivity {
         setContentView(R.layout.activity_display);
         Intent intent = getIntent();
         my_id = intent.getStringExtra("my_id");
+        accesstoken = intent.getStringExtra("accesstoken");
         lv = (ListView)findViewById(R.id.lv);
         cache = Collections.synchronizedList(new ArrayList<String>());
         adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,cache);
@@ -72,6 +81,7 @@ public class DisplayActivity extends AppCompatActivity {
         public void onEnabled() {
             try {
                 client.getDiscoveryServices().setP2pDiscoveryInfo(my_id.getBytes());
+
             } catch (InfoTooLongException e) {
                 e.printStackTrace();
             }
@@ -80,17 +90,23 @@ public class DisplayActivity extends AppCompatActivity {
 
         @Override
         public void onSuspended() {
-
+            client.disableP2PKit();
         }
 
         @Override
         public void onResumed() {
+            try {
+                client.getDiscoveryServices().setP2pDiscoveryInfo(my_id.getBytes());
 
+            } catch (InfoTooLongException e) {
+                e.printStackTrace();
+            }
+            Toast.makeText(DisplayActivity.this,"onResumed",Toast.LENGTH_SHORT).show();
         }
 
         @Override
         public void onDisabled() {
-
+            client.disableP2PKit();
         }
 
         @Override
@@ -112,11 +128,11 @@ public class DisplayActivity extends AppCompatActivity {
             Toast.makeText(DisplayActivity.this,"onPeerDiscovered",Toast.LENGTH_SHORT).show();
             String result;
             try {
-                result = backendCall(new String(peer.getDiscoveryInfo()));
+
                             /*use of synchronous to prevent racearounds on different onPeerDiscovered threads*/
 
                 synchronized (cache){
-
+                    result = backendCall(new String(peer.getDiscoveryInfo()),accesstoken);
                     cache.add(result);
                 /* find a way to sort the cache now.*/
 
@@ -134,7 +150,6 @@ public class DisplayActivity extends AppCompatActivity {
             */
 
 
-
             lv.setAdapter(adapter);
         }
 
@@ -149,7 +164,7 @@ public class DisplayActivity extends AppCompatActivity {
             Toast.makeText(DisplayActivity.this,"onPeerDiscovered",Toast.LENGTH_SHORT).show();
             String result;
             try {
-                result = backendCall(new String(peer.getDiscoveryInfo()));
+                result = backendCall(new String(peer.getDiscoveryInfo()),accesstoken);
                             /*use of synchronous to prevent racearounds on different onPeerDiscovered threads*/
 
                 synchronized (cache){
@@ -181,24 +196,50 @@ public class DisplayActivity extends AppCompatActivity {
         }
     };
 
+    String resp;
+    public String backendCall(String id,String token){
 
-    public String backendCall(String id){
-        /* make the back end call to the server
-        * and return the same id along with the number of mutual likes present in it*/
+        RequestQueue queue = Volley.newRequestQueue(this);
+        String url = "http://meetapi.herokuapp.com/fbx/"+token+"/"+id;
 
-        return id;
+
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+
+                        // Result handling
+                        resp=response.toString();
+
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+                // Error handling
+                System.out.println("ERR");
+                error.printStackTrace();
+
+            }
+        });
+
+        queue.add(stringRequest);
+
+        return resp;
     }
 
 
-    public void P2Penable(){
-
-    }
 
 
     public void refresh(View view){
 
         client.getDiscoveryServices().removeAllP2pListener();
         client.disableP2PKit();
+
+        synchronized (cache){
+
+            cache.clear();
+        }
 
 
         client.enableP2PKit(callback,P2P_APP_KEY);
@@ -208,16 +249,8 @@ public class DisplayActivity extends AppCompatActivity {
             e.printStackTrace();
         }
         client.getDiscoveryServices().addP2pListener(listener);
+
     }
-
-
-
-
-
-
-
-
-
 
 
 
