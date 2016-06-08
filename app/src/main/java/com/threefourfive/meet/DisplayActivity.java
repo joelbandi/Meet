@@ -3,6 +3,7 @@ package com.threefourfive.meet;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -17,10 +18,7 @@ import com.android.volley.toolbox.Volley;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import ch.uepaa.p2pkit.P2PKitClient;
 import ch.uepaa.p2pkit.discovery.InfoTooLongException;
@@ -42,7 +40,6 @@ public class DisplayActivity extends AppCompatActivity {
     ArrayAdapter<String> adapter;
 
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,18 +51,15 @@ public class DisplayActivity extends AppCompatActivity {
         cache = Collections.synchronizedList(new ArrayList<String>());
         adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,cache);
         placeholder="user_ID";
-
-
         lv.setAdapter(adapter);
 
 
         final StatusResult result = P2PKitClient.isP2PServicesAvailable(DisplayActivity.this);
         if(result.getStatusCode()== StatusResult.SUCCESS){
-            client = P2PKitClient.getInstance(this);
+            client = P2PKitClient.getInstance(DisplayActivity.this);
+            client.enableP2PKit(callback, P2P_APP_KEY);
             try {
-                client.enableP2PKit(callback, P2P_APP_KEY);
                 client.getDiscoveryServices().setP2pDiscoveryInfo(my_id.getBytes());
-                client.getDiscoveryServices().addP2pListener(listener);
             } catch (InfoTooLongException e) {
                 e.printStackTrace();
             }
@@ -79,18 +73,23 @@ public class DisplayActivity extends AppCompatActivity {
     private final P2PKitStatusCallback callback = new P2PKitStatusCallback() {
         @Override
         public void onEnabled() {
-            try {
-                client.getDiscoveryServices().setP2pDiscoveryInfo(my_id.getBytes());
 
-            } catch (InfoTooLongException e) {
-                e.printStackTrace();
+            if(client.isEnabled()){
+                try {
+                    client.getDiscoveryServices().setP2pDiscoveryInfo(my_id.getBytes());
+
+                } catch (InfoTooLongException e) {
+                    e.printStackTrace();
+                }
+                client.getDiscoveryServices().addP2pListener(listener);
             }
             Toast.makeText(DisplayActivity.this,"onEnabled",Toast.LENGTH_SHORT).show();
+
         }
 
         @Override
         public void onSuspended() {
-            client.disableP2PKit();
+
         }
 
         @Override
@@ -106,12 +105,12 @@ public class DisplayActivity extends AppCompatActivity {
 
         @Override
         public void onDisabled() {
-            client.disableP2PKit();
+
         }
 
         @Override
         public void onError(StatusResult result) {
-
+            Log.d("Err",Integer.toString(result.getStatusCode()));
         }
     };
 
@@ -132,8 +131,7 @@ public class DisplayActivity extends AppCompatActivity {
                             /*use of synchronous to prevent racearounds on different onPeerDiscovered threads*/
 
                 synchronized (cache){
-                    result = backendCall(new String(peer.getDiscoveryInfo()),accesstoken);
-                    cache.add(result);
+                    result = backendCall(new String(peer.getDiscoveryInfo()),accesstoken); //result = "getDiscoveryInfo().toString()
                 /* find a way to sort the cache now.*/
 
                 }
@@ -196,11 +194,11 @@ public class DisplayActivity extends AppCompatActivity {
         }
     };
 
+
     String resp;
     public String backendCall(String id,String token){
-
         RequestQueue queue = Volley.newRequestQueue(this);
-        String url = "http://meetapi.herokuapp.com/fbx/"+token+"/"+id;
+        String url = "http://meetapi.herokuapp.com/api/aml"+token+"/"+id;
 
 
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
@@ -226,6 +224,8 @@ public class DisplayActivity extends AppCompatActivity {
         queue.add(stringRequest);
 
         return resp;
+
+        //resp should contain JSON data contains - > name
     }
 
 
