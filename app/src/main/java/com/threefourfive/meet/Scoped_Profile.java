@@ -6,15 +6,28 @@ package com.threefourfive.meet;
 public class Scoped_Profile {
 
     String app_scoped_id;
-    String photoURL;
+    String picture;
+    String name;
+
+
+
     int mutual_likes;
     int mutual_friends;
 
-    public Scoped_Profile(String app_scoped_id, String photoURL, int mutual_likes, int mutual_friends) {
+    public Scoped_Profile(String app_scoped_id, String photoURL, int mutual_likes, int mutual_friends, String name) {
         this.app_scoped_id = app_scoped_id;
-        this.photoURL = photoURL;
+        this.picture = photoURL;
         this.mutual_likes = mutual_likes;
         this.mutual_friends = mutual_friends;
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getApp_scoped_id() {
@@ -42,11 +55,11 @@ public class Scoped_Profile {
     }
 
     public String getPhotoURL() {
-        return photoURL;
+        return picture;
     }
 
     public void setPhotoURL(String photoURL) {
-        this.photoURL = photoURL;
+        this.picture = photoURL;
     }
 
 }

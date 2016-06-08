@@ -15,6 +15,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.gson.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,6 +39,7 @@ public class DisplayActivity extends AppCompatActivity {
     P2PKitClient client;
     String placeholder;
     ArrayAdapter<String> adapter;
+    ArrayList<Scoped_Profile> profile_array;
 
 
     @Override
@@ -48,7 +50,9 @@ public class DisplayActivity extends AppCompatActivity {
         my_id = intent.getStringExtra("my_id");
         accesstoken = intent.getStringExtra("accesstoken");
         lv = (ListView)findViewById(R.id.lv);
+        profile_array = new ArrayList<Scoped_Profile>();//holds array of profile objects;
         cache = Collections.synchronizedList(new ArrayList<String>());
+
         adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,cache);
         placeholder="user_ID";
         lv.setAdapter(adapter);
@@ -129,10 +133,23 @@ public class DisplayActivity extends AppCompatActivity {
             try {
 
                             /*use of synchronous to prevent racearounds on different onPeerDiscovered threads*/
-
                 synchronized (cache){
                     result = backendCall(new String(peer.getDiscoveryInfo()),accesstoken); //result = "getDiscoveryInfo().toString()
-                /* find a way to sort the cache now.*/
+                    //System.out.println("result");
+                    if (result != null && result.toLowerCase().contains("error".toLowerCase())){
+                        Gson gson = new Gson();
+                        Scoped_Profile profile = gson.fromJson(result, Scoped_Profile.class);
+
+                        String pic = profile.getPhotoURL();
+                        System.out.print("pic: " + pic);
+                        profile_array.add(profile);
+                        cache.add(profile.getName());
+
+
+                    }
+                    System.out.println("Result in On Peer Discovered " + result);
+
+                    /* find a way to sort the cache now.*/
 
                 }
             }catch (Exception e){
@@ -162,15 +179,30 @@ public class DisplayActivity extends AppCompatActivity {
             Toast.makeText(DisplayActivity.this,"onPeerDiscovered",Toast.LENGTH_SHORT).show();
             String result;
             try {
-                result = backendCall(new String(peer.getDiscoveryInfo()),accesstoken);
-                            /*use of synchronous to prevent racearounds on different onPeerDiscovered threads*/
+                synchronized (cache) {
+                    result = backendCall(new String(peer.getDiscoveryInfo()), accesstoken); //result = "getDiscoveryInfo().toString()
+                    //System.out.println("result");
+                    if (result != null && result.toLowerCase().contains("error".toLowerCase())) {
+                        Gson gson = new Gson();
+                        Scoped_Profile profile = gson.fromJson(result, Scoped_Profile.class);
 
-                synchronized (cache){
+                        String pic = profile.getPhotoURL();
+                        System.out.print("pic: " + pic);
+                        profile_array.add(profile);
+                        cache.add(profile.getName());
 
-                    cache.add(result);
-                /* find a way to sort the cache now.*/
+                        System.out.println("response in backend call: " + resp);
+
+
+                    }
+                    System.out.println("Result in On Peer Discovered " + result);
+
+                    /* find a way to sort the cache now.*/
 
                 }
+                            /*use of synchronous to prevent racearounds on different onPeerDiscovered threads*/
+
+
             }catch (Exception e){
                 e.printStackTrace();
             }
@@ -196,32 +228,35 @@ public class DisplayActivity extends AppCompatActivity {
 
 
     String resp;
+
     public String backendCall(String id,String token){
         RequestQueue queue = Volley.newRequestQueue(this);
-        String url = "http://meetapi.herokuapp.com/api/aml"+token+"/"+id;
+        String url = "http://meetapi.herokuapp.com/api/amf/"+token+"/"+id;
 
 
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-
-                        // Result handling
+                        // Result handling  );
+                        //Scoped_Profile profile = Scoped_Profile(peer.getDiscoveryInfo(), response["picture"], response["mutual_likes"], response["mutual_friends"]);
                         resp=response.toString();
+                        System.out.println("response in backend call: " + resp);
+
 
                     }
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-
+                resp = "error";
                 // Error handling
                 System.out.println("ERR");
                 error.printStackTrace();
-
             }
         });
 
         queue.add(stringRequest);
+
 
         return resp;
 
