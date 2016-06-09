@@ -246,33 +246,33 @@ public class DisplayActivity extends AppCompatActivity {
             String result;
             try {
                 synchronized (cache) {
-                    String friendID = new String(peer.getDiscoveryInfo());
-                    result = backendCall(friendID,accesstoken);
-                    //System.out.println("result");
-                    if (result != null && !result.toLowerCase().contains("error".toLowerCase())) {
-                        Gson gson = new Gson();
-                        Scoped_Profile profile = gson.fromJson(result, Scoped_Profile.class);
-                        profile.setApp_scoped_id(friendID);
-
-                        String pic = profile.getPhotoURL();
-                        System.out.print("pic: " + pic);
-                        profile_array.add(profile);
-                        map.put(profile.getName(), profile.getScore());
-
-                        if (map.size() > 1)
-                            cache = sortByComparatorKeys(map);
-                        else{
-                            cache.add(profile.getName());
-                        }
-
-                        System.out.println("cache: Update " + cache);
-
-                        System.out.println("response in on peer update: " + resp);
-                        //adapter.notifyDataSetChanged();
-
-
-                    }
-                    System.out.println("Result in On Peer Update out " + result);
+//                    String friendID = new String(peer.getDiscoveryInfo());
+//                    result = backendCall(friendID,accesstoken);
+//                    //System.out.println("result");
+//                    if (result != null && !result.toLowerCase().contains("error".toLowerCase())) {
+//                        Gson gson = new Gson();
+//                        Scoped_Profile profile = gson.fromJson(result, Scoped_Profile.class);
+//                        profile.setApp_scoped_id(friendID);
+//
+//                        String pic = profile.getPhotoURL();
+//                        System.out.print("pic: " + pic);
+//                        profile_array.add(profile);
+//                        map.put(profile.getName(), profile.getScore());
+//
+//                        if (map.size() > 1)
+//                            cache = sortByComparatorKeys(map);
+//                        else{
+//                            cache.add(profile.getName());
+//                        }
+//
+//                        System.out.println("cache: Update " + cache);
+//
+//                        System.out.println("response in on peer update: " + resp);
+//                        //adapter.notifyDataSetChanged();
+//
+//
+//                    }
+//                    System.out.println("Result in On Peer Update out " + result);
 
                     /* find a way to sort the cache now.*/
 
