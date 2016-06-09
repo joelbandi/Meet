@@ -62,9 +62,9 @@ public class DisplayActivity extends AppCompatActivity {
         lv = (ListView)findViewById(R.id.lv);
         profile_array = new ArrayList<Scoped_Profile>();//holds array of profile objects;
         cache = Collections.synchronizedList(new ArrayList<String>());
-
-        adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,cache);
         placeholder="user_ID";
+        adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,cache);
+
         lv.setAdapter(adapter);
 
 
@@ -203,8 +203,13 @@ public class DisplayActivity extends AppCompatActivity {
                         System.out.print("pic: " + pic);
                         profile_array.add(profile);
                         map.put(profile.getName(), profile.getScore());
-                        cache = sortByComparatorKeys(map);
+                        if (map.size() > 1)
+                            cache = sortByComparatorKeys(map);
+                        else{
+                            cache.add(profile.getName());
+                        }
                         System.out.println("cache:in On  Disc " + cache);
+                        //adapter.notifyDataSetChanged();
 
 
                     }
@@ -253,10 +258,17 @@ public class DisplayActivity extends AppCompatActivity {
                         System.out.print("pic: " + pic);
                         profile_array.add(profile);
                         map.put(profile.getName(), profile.getScore());
-                        cache = sortByComparatorKeys(map);
+
+                        if (map.size() > 1)
+                            cache = sortByComparatorKeys(map);
+                        else{
+                            cache.add(profile.getName());
+                        }
+
                         System.out.println("cache: Update " + cache);
 
                         System.out.println("response in on peer update: " + resp);
+                        //adapter.notifyDataSetChanged();
 
 
                     }
