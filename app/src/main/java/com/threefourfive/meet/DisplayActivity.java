@@ -20,6 +20,12 @@ import com.google.gson.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.LinkedList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.Iterator;
 
 import ch.uepaa.p2pkit.P2PKitClient;
 import ch.uepaa.p2pkit.discovery.InfoTooLongException;
@@ -36,10 +42,14 @@ public class DisplayActivity extends AppCompatActivity {
     String accesstoken;
     private static final String P2P_APP_KEY = "eyJzaWduYXR1cmUiOiJCYnZiSGI2SGw4b0h4OUdEbWxRU0VzQ0ZRUnorQzZLeHQzOFBGajRYV1JjZ1lwRU1RSmRhKzc4UjRsY0NHays3aTVtc0xSaWplZmlBaDI3WEhnaDJtVHhEOUNWRkxWSllISkVIMWFYQTB2VTd2eFF1NlJKcktJUFhlZGR5Z2NML0gyTXBEVWVSUmdCRHVhZ1pOUHJEN1JRRU9DNWhiRHNwTG92Q3gzWE40UTQ9IiwiYXBwSWQiOjE2MDYsInZhbGlkVW50aWwiOjE3MDIwLCJhcHBVVVVJRCI6IkFGMERGMDg5LUREMTUtNDcwOS05NEI3LUFEMjkxODQ5MkQwNiJ9";
     List<String> cache;
+    HashMap<String, Integer> map = new HashMap<String, Integer>();
+    //HashMap hm;// = new HashMap();
     P2PKitClient client;
     String placeholder;
     ArrayAdapter<String> adapter;
     ArrayList<Scoped_Profile> profile_array;
+
+
 
 
     @Override
@@ -70,6 +80,51 @@ public class DisplayActivity extends AppCompatActivity {
         }else{
             StatusResultHandling.showAlertDialogForStatusError(this, result);
         }
+    }
+
+    private static Map<String, Integer> sortByComparator(Map<String, Integer> unsortMap) {
+
+        // Convert Map to List
+        List<Map.Entry<String, Integer>> list =
+                new LinkedList<Map.Entry<String, Integer>>(unsortMap.entrySet());
+
+        // Sort list with comparator, to compare the Map values
+        Collections.sort(list, new Comparator<Map.Entry<String, Integer>>() {
+            public int compare(Map.Entry<String, Integer> o1,
+                               Map.Entry<String, Integer> o2) {
+                return (o1.getValue()).compareTo(o2.getValue());
+            }
+        });
+
+        // Convert sorted map back to a Map
+        Map<String, Integer> sortedMap = new LinkedHashMap<String, Integer>();
+        for (Iterator<Map.Entry<String, Integer>> it = list.iterator(); it.hasNext();) {
+            Map.Entry<String, Integer> entry = it.next();
+            sortedMap.put(entry.getKey(), entry.getValue());
+        }
+        return sortedMap;
+    }
+    private static List<String> sortByComparatorKeys(Map<String, Integer> unsortMap) {
+
+        // Convert Map to List
+        List<Map.Entry<String, Integer>> list =
+                new LinkedList<Map.Entry<String, Integer>>(unsortMap.entrySet());
+
+        // Sort list with comparator, to compare the Map values
+        Collections.sort(list, new Comparator<Map.Entry<String, Integer>>() {
+            public int compare(Map.Entry<String, Integer> o1,
+                               Map.Entry<String, Integer> o2) {
+                return (o1.getValue()).compareTo(o2.getValue());
+            }
+        });
+
+        // Convert sorted map back to a Map
+        List<String>sortedKeys = new ArrayList<String>();
+        for (Iterator<Map.Entry<String, Integer>> it = list.iterator(); it.hasNext();) {
+            Map.Entry<String, Integer> entry = it.next();
+            sortedKeys.add(entry.getKey());
+        }
+        return sortedKeys;
     }
 
 
@@ -134,16 +189,22 @@ public class DisplayActivity extends AppCompatActivity {
 
                             /*use of synchronous to prevent racearounds on different onPeerDiscovered threads*/
                 synchronized (cache){
-                    result = backendCall(new String(peer.getDiscoveryInfo()),accesstoken); //result = "getDiscoveryInfo().toString()
+                    String friendID = new String(peer.getDiscoveryInfo());
+                    result = backendCall(friendID,accesstoken); //result = "getDiscoveryInfo().toString()
                     //System.out.println("result");
-                    if (result != null && result.toLowerCase().contains("error".toLowerCase())){
+
+                    if (result != null && !result.toLowerCase().contains("error".toLowerCase())){
                         Gson gson = new Gson();
                         Scoped_Profile profile = gson.fromJson(result, Scoped_Profile.class);
+                        profile.setApp_scoped_id(friendID);
+                        System.out.print("name: " + profile.getName());
 
                         String pic = profile.getPhotoURL();
                         System.out.print("pic: " + pic);
                         profile_array.add(profile);
-                        cache.add(profile.getName());
+                        map.put(profile.getName(), profile.getScore());
+                        cache = sortByComparatorKeys(map);
+                        System.out.println("cache:in On  Disc " + cache);
 
 
                     }
@@ -180,22 +241,26 @@ public class DisplayActivity extends AppCompatActivity {
             String result;
             try {
                 synchronized (cache) {
-                    result = backendCall(new String(peer.getDiscoveryInfo()), accesstoken); //result = "getDiscoveryInfo().toString()
+                    String friendID = new String(peer.getDiscoveryInfo());
+                    result = backendCall(friendID,accesstoken);
                     //System.out.println("result");
-                    if (result != null && result.toLowerCase().contains("error".toLowerCase())) {
+                    if (result != null && !result.toLowerCase().contains("error".toLowerCase())) {
                         Gson gson = new Gson();
                         Scoped_Profile profile = gson.fromJson(result, Scoped_Profile.class);
+                        profile.setApp_scoped_id(friendID);
 
                         String pic = profile.getPhotoURL();
                         System.out.print("pic: " + pic);
                         profile_array.add(profile);
-                        cache.add(profile.getName());
+                        map.put(profile.getName(), profile.getScore());
+                        cache = sortByComparatorKeys(map);
+                        System.out.println("cache: Update " + cache);
 
-                        System.out.println("response in backend call: " + resp);
+                        System.out.println("response in on peer update: " + resp);
 
 
                     }
-                    System.out.println("Result in On Peer Discovered " + result);
+                    System.out.println("Result in On Peer Update out " + result);
 
                     /* find a way to sort the cache now.*/
 

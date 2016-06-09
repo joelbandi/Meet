@@ -62,4 +62,8 @@ public class Scoped_Profile {
         this.picture = photoURL;
     }
 
+    public int getScore(){
+        return mutual_friends + mutual_likes;
+    }
+
 }
