@@ -43,6 +43,10 @@ public class DisplayActivity extends AppCompatActivity {
     private static final String P2P_APP_KEY = "eyJzaWduYXR1cmUiOiJCYnZiSGI2SGw4b0h4OUdEbWxRU0VzQ0ZRUnorQzZLeHQzOFBGajRYV1JjZ1lwRU1RSmRhKzc4UjRsY0NHays3aTVtc0xSaWplZmlBaDI3WEhnaDJtVHhEOUNWRkxWSllISkVIMWFYQTB2VTd2eFF1NlJKcktJUFhlZGR5Z2NML0gyTXBEVWVSUmdCRHVhZ1pOUHJEN1JRRU9DNWhiRHNwTG92Q3gzWE40UTQ9IiwiYXBwSWQiOjE2MDYsInZhbGlkVW50aWwiOjE3MDIwLCJhcHBVVVVJRCI6IkFGMERGMDg5LUREMTUtNDcwOS05NEI3LUFEMjkxODQ5MkQwNiJ9";
     List<String> cache;
     HashMap<String, Integer> map = new HashMap<String, Integer>();
+    HashMap<String, Scoped_Profile> mapProfiles = new HashMap<String, Scoped_Profile>();
+    List<String> names;
+
+
     //HashMap hm;// = new HashMap();
     P2PKitClient client;
     String placeholder;
@@ -62,8 +66,9 @@ public class DisplayActivity extends AppCompatActivity {
         lv = (ListView)findViewById(R.id.lv);
         profile_array = new ArrayList<Scoped_Profile>();//holds array of profile objects;
         cache = Collections.synchronizedList(new ArrayList<String>());
+        names = Collections.synchronizedList(new ArrayList<String>());
         placeholder="user_ID";
-        adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,cache);
+        adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,names);
 
         lv.setAdapter(adapter);
 
@@ -125,6 +130,22 @@ public class DisplayActivity extends AppCompatActivity {
             sortedKeys.add(entry.getKey());
         }
         return sortedKeys;
+    }
+
+
+    private int getIndexAtValue(List<Scoped_Profile> arr, String val){
+        int i = 0;
+        boolean found = false;
+        while(i < arr.size() && found == false){
+            if (arr.get(i).getName() == val){
+
+                found = true;
+            }
+            i = i + 1;
+
+        }
+        return i;
+
     }
 
 
@@ -202,11 +223,17 @@ public class DisplayActivity extends AppCompatActivity {
                         String pic = profile.getPhotoURL();
                         System.out.print("pic: " + pic);
                         profile_array.add(profile);
-                        map.put(profile.getName(), profile.getScore());
+                        map.put(profile.getApp_scoped_id(), profile.getScore());
+                        mapProfiles.put(profile.getApp_scoped_id(), profile);
+
                         if (map.size() > 1)
                             cache = sortByComparatorKeys(map);
                         else{
-                            cache.add(profile.getName());
+                            cache.add(profile.getApp_scoped_id());
+                        }
+
+                        for(String s: cache){
+                            names.add(mapProfiles.get(s).getName());
                         }
                         System.out.println("cache:in On  Disc " + cache);
                         //adapter.notifyDataSetChanged();
