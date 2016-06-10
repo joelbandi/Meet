@@ -14,8 +14,8 @@ public class Scoped_Profile {
     int mutual_likes;
     int mutual_friends;
 
-    public Scoped_Profile(String app_scoped_id, String photoURL, int mutual_likes, int mutual_friends, String name) {
-        this.app_scoped_id = app_scoped_id;
+    public Scoped_Profile(String photoURL, int mutual_likes, int mutual_friends, String name) {
+//        this.app_scoped_id = app_scoped_id;
         this.picture = photoURL;
         this.mutual_likes = mutual_likes;
         this.mutual_friends = mutual_friends;
