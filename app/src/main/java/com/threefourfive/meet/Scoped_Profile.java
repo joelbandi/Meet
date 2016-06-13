@@ -9,8 +9,6 @@ public class Scoped_Profile {
     String picture;
     String name;
 
-
-
     int mutual_likes;
     int mutual_friends;
 

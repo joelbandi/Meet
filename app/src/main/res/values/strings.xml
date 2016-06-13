@@ -4,4 +4,23 @@
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
     <string name="title_activity_login">LoginActivity</string>
+    <string-array name="profile_name">
+        <item>User #1</item>
+        <item>User #2</item>
+        <item>User #3</item>
+        <item>User #4</item>
+        <item>User #5</item>
+        <item>User #6</item>
+        <item>User #7</item>
+    </string-array>
+
+    <string-array name="profile_info">
+        <item>Info #1, 1 Mutual</item>
+        <item>Info #2, 2 Mutual</item>
+        <item>Info #3, 3 Mutual</item>
+        <item>Info #4, 4 Mutual</item>
+        <item>Info #5, 5 Mutual</item>
+        <item>Info #6, 6 Mutual</item>
+        <item>Info #7, 7 Mutual</item>
+    </string-array>
 </resources>

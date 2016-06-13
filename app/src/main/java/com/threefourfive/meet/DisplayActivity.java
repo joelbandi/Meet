@@ -1,6 +1,8 @@
 package com.threefourfive.meet;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -35,6 +37,16 @@ import java.util.LinkedList;
 import java.util.Comparator;
 import java.util.Iterator;
 public class DisplayActivity extends AppCompatActivity {
+
+    RecyclerView recyclerView;
+    RecyclerView.Adapter rAdapter;
+    RecyclerView.LayoutManager layoutManager;
+
+    // profile_array already defined
+    ArrayList<Scoped_Profile> arrayList = new ArrayList<Scoped_Profile>();
+    String[] Name,Info;
+    int[] img={R.drawable.me,R.drawable.me,R.drawable.me,R.drawable.me,R.drawable.me,R.drawable.me};
+
     ListView lv;
     String my_id;
     String accesstoken;
@@ -48,6 +60,7 @@ public class DisplayActivity extends AppCompatActivity {
     String placeholder;
     ArrayAdapter<String> adapter;
     List<Scoped_Profile> profile_array;
+
     // Enabling (1/2) - Enable the P2P Services
     public void enableKit(final boolean startP2PDiscovery, P2PKitEnabledCallback p2PKitEnabledCallback) {
         mShouldStartP2PDiscovery = startP2PDiscovery;
@@ -171,13 +184,30 @@ public class DisplayActivity extends AppCompatActivity {
         Intent intent = getIntent();
         my_id = intent.getStringExtra("my_id");
         accesstoken = intent.getStringExtra("accesstoken");
-        lv = (ListView) findViewById(R.id.lv);
+//        lv = (ListView) findViewById(R.id.lv);
         profile_array = new ArrayList<Scoped_Profile>();//holds array of profile objects;
         cache =  new ArrayList<String>();
         names = new ArrayList<String>();
         placeholder = "user_ID";
-        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, names);
-        lv.setAdapter(adapter);
+
+        // Added by Moin
+        recyclerView = (RecyclerView)findViewById(R.id.rv);
+        layoutManager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(layoutManager);
+//        recyclerView.setHasFixedSize(true);
+        Name = getResources().getStringArray(R.array.profile_name);
+        Info = getResources().getStringArray(R.array.profile_info);
+        int count =0;
+        for(String NAME : Name) // Initializing sample profiles
+        {
+            Scoped_Profile scopedProfile = new Scoped_Profile("",count,count,NAME);
+            arrayList.add(scopedProfile);
+            count++;
+        }
+        rAdapter = new RecyclerAdapter(arrayList);
+        recyclerView.setAdapter(rAdapter);
+//        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, names);
+//        lv.setAdapter(adapter);
     }
     @Override
     public void onResume() {
@@ -267,9 +297,12 @@ public class DisplayActivity extends AppCompatActivity {
                         }
                         System.out.println("L1O1GGG Add finished " + resp);
 
-                        adapter.notifyDataSetChanged();
+//                        adapter.notifyDataSetChanged();
+                        rAdapter.notifyDataSetChanged();
                         System.out.println(" L1O1GGG adapter updated ");
-                        lv.setAdapter(adapter);
+                        recyclerView.setAdapter(rAdapter);
+//                        lv.setAdapter(adapter);
+
 
                     }
                 }, new Response.ErrorListener() {
