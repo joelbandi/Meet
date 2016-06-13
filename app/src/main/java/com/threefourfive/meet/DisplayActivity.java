@@ -2,8 +2,6 @@ package com.threefourfive.meet;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 import ch.uepaa.p2pkit.P2PKitClient;
@@ -43,7 +41,6 @@ public class DisplayActivity extends AppCompatActivity {
     HashMap<String, Integer> maptobeSorted = new HashMap<String, Integer>();
     HashMap<String, Scoped_Profile> mapProfiles = new HashMap<String, Scoped_Profile>();
     List<String> names;
-    //HashMap hm;// = new HashMap();
     P2PKitClient client;
     String placeholder;
     ArrayAdapter<String> adapter;
@@ -104,6 +101,38 @@ public class DisplayActivity extends AppCompatActivity {
         mP2PServiceStarted = false;
         mGeoServiceStarted = false;
     }
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_display);
+        mShouldEnable = true;
+        mShouldStartP2PDiscovery = false;
+        mP2PServiceStarted = false;
+        mGeoServiceStarted = false;
+        Intent intent = getIntent();
+        my_id = intent.getStringExtra("my_id");
+        accesstoken = intent.getStringExtra("accesstoken");
+        lv = (ListView) findViewById(R.id.lv);
+        profile_array = new ArrayList<Scoped_Profile>();//holds array of profile objects;
+        cache =  new ArrayList<String>();
+        names = new ArrayList<String>();
+        placeholder = "user_ID";
+        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, names);
+        lv.setAdapter(adapter);
+    }
+    @Override
+    public void onResume() {
+        super.onResume();
+        // When the user comes back from the play store after installing p2p services, try to enable p2pkit again
+        if (mShouldEnable && !P2PKitClient.getInstance(this).isEnabled()) {
+            enableKit(true, null);
+        }
+    }
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        disableKit();
+    }
     public void startP2pDiscovery() {
         Log.i("P2PKitClient", "Start discovery");
         mP2PServiceStarted = true;
@@ -160,39 +189,6 @@ public class DisplayActivity extends AppCompatActivity {
     private P2PKitEnabledCallback mP2PKitEnabledCallback;
     private boolean mP2PServiceStarted;
     private boolean mGeoServiceStarted;
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_display);
-        mShouldEnable = true;
-        mShouldStartP2PDiscovery = false;
-        mP2PServiceStarted = false;
-        mGeoServiceStarted = false;
-        Intent intent = getIntent();
-        my_id = intent.getStringExtra("my_id");
-        accesstoken = intent.getStringExtra("accesstoken");
-        lv = (ListView) findViewById(R.id.lv);
-        profile_array = new ArrayList<Scoped_Profile>();//holds array of profile objects;
-        cache =  new ArrayList<String>();
-        names = new ArrayList<String>();
-        placeholder = "user_ID";
-        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, names);
-        lv.setAdapter(adapter);
-    }
-    @Override
-    public void onResume() {
-        super.onResume();
-        // When the user comes back from the play store after installing p2p services, try to enable p2pkit again
-        if (mShouldEnable && !P2PKitClient.getInstance(this).isEnabled()) {
-            enableKit(true, null);
-        }
-    }
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        disableKit();
-    }
-
     private void handlePeerDiscovered(final Peer peer) {
         byte[] peerDiscoveryInfo = peer.getDiscoveryInfo();
         float proximityStrength = (peer.getProximityStrength() - 1f) / 4;
@@ -234,8 +230,15 @@ public class DisplayActivity extends AppCompatActivity {
     private byte[] loadOwnDiscoveryData() {
         return my_id.getBytes();
     }
+
+
+
+
+
+
     String resp;
     private void backendCall(String id, String token) {
+
         final String app_scoped_id = id;
         RequestQueue queue = Volley.newRequestQueue(this);
         String url = "http://meetapi.herokuapp.com/api/amf/" + token + "/" + id;
@@ -248,16 +251,27 @@ public class DisplayActivity extends AppCompatActivity {
                         resp = response.toString();
                         System.out.println("L1O1GGG response in backend call: " + resp);
 
-
+                        //assume fb backend always works at all time!!!
                         if (true) {
+
+
                             Gson gson = new Gson();
                             Scoped_Profile profile = gson.fromJson(resp, Scoped_Profile.class);
-//                Scoped_Profile profile = new Scoped_Profile(friendID,)
-                            profile.setApp_scoped_id(app_scoped_id);
-                            String pic = profile.getPhotoURL();
+
+
+
+
+                            //profile.setApp_scoped_id(app_scoped_id);
+
+
                             maptobeSorted.put(profile.getApp_scoped_id(), profile.getScore());
+
+
                             mapProfiles.put(profile.getApp_scoped_id(), profile);
+
+
                             cache = sortByComparatorKeys(maptobeSorted);
+
 
 
                             for (String s : cache) {
@@ -265,7 +279,6 @@ public class DisplayActivity extends AppCompatActivity {
                                 System.out.println(" L1O1GGG Added to names array -> " + mapProfiles.get(s).getName());
                             }
                         }
-                        System.out.println("L1O1GGG Add finished " + resp);
 
                         adapter.notifyDataSetChanged();
                         System.out.println(" L1O1GGG adapter updated ");
@@ -277,13 +290,23 @@ public class DisplayActivity extends AppCompatActivity {
             public void onErrorResponse(VolleyError error) {
                 resp = "error";
                 // Error handling
-                System.out.println("ERR");
+                System.out.println("ERR in Volley request!!!");
                 error.printStackTrace();
             }
         });
         queue.add(stringRequest);
         //resp should contain JSON data contains - > name
     }
+
+
+
+
+
+
+
+
+
+
 
     public void refresh(View view){
 
@@ -306,8 +329,6 @@ public class DisplayActivity extends AppCompatActivity {
         updateOwnDiscoveryInfo();
 
     }
-
-
     private static ArrayList<String> sortByComparatorKeys(Map<String, Integer> unsortMap) {
         // Convert Map to List
         List<Map.Entry<String, Integer>> list =
