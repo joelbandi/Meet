@@ -1,6 +1,8 @@
 package com.threefourfive.meet;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -40,11 +42,13 @@ public class DisplayActivity extends AppCompatActivity {
     ArrayList<String> cache;
     HashMap<String, Integer> maptobeSorted = new HashMap<String, Integer>();
     HashMap<String, Scoped_Profile> mapProfiles = new HashMap<String, Scoped_Profile>();
-    List<String> names;
+//    List<String> names;
     P2PKitClient client;
     String placeholder;
-    ArrayAdapter<String> adapter;
     List<Scoped_Profile> profile_array;
+    RecyclerView recyclerview;
+    LinearLayoutManager llm;
+    CardAdapter adapter;
     // Enabling (1/2) - Enable the P2P Services
     public void enableKit(final boolean startP2PDiscovery, P2PKitEnabledCallback p2PKitEnabledCallback) {
         mShouldStartP2PDiscovery = startP2PDiscovery;
@@ -112,13 +116,21 @@ public class DisplayActivity extends AppCompatActivity {
         Intent intent = getIntent();
         my_id = intent.getStringExtra("my_id");
         accesstoken = intent.getStringExtra("accesstoken");
-        lv = (ListView) findViewById(R.id.lv);
         profile_array = new ArrayList<Scoped_Profile>();//holds array of profile objects;
         cache =  new ArrayList<String>();
-        names = new ArrayList<String>();
+//        names = new ArrayList<String>();
         placeholder = "user_ID";
-        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, names);
-        lv.setAdapter(adapter);
+
+
+        recyclerview = (RecyclerView) findViewById(R.id.recyclerview);
+        recyclerview.setHasFixedSize(false);
+        llm = new LinearLayoutManager(this);
+        recyclerview.setLayoutManager(llm);
+        adapter = new CardAdapter(profile_array);
+        recyclerview.setAdapter(adapter);
+
+
+
     }
     @Override
     public void onResume() {
@@ -254,14 +266,8 @@ public class DisplayActivity extends AppCompatActivity {
                         //assume fb backend always works at all time!!!
                         if (true) {
 
-
                             Gson gson = new Gson();
                             Scoped_Profile profile = gson.fromJson(resp, Scoped_Profile.class);
-
-
-
-
-                            //profile.setApp_scoped_id(app_scoped_id);
 
 
                             maptobeSorted.put(profile.getApp_scoped_id(), profile.getScore());
@@ -274,15 +280,16 @@ public class DisplayActivity extends AppCompatActivity {
 
 
 
+
                             for (String s : cache) {
-                                names.add(mapProfiles.get(s).getName());
+                                profile_array.add(mapProfiles.get(s));
                                 System.out.println(" L1O1GGG Added to names array -> " + mapProfiles.get(s).getName());
                             }
                         }
 
                         adapter.notifyDataSetChanged();
                         System.out.println(" L1O1GGG adapter updated ");
-                        lv.setAdapter(adapter);
+                        recyclerview.setAdapter(adapter);
 
                     }
                 }, new Response.ErrorListener() {
@@ -337,7 +344,7 @@ public class DisplayActivity extends AppCompatActivity {
         Collections.sort(list, new Comparator<Map.Entry<String, Integer>>() {
             public int compare(Map.Entry<String, Integer> o1,
                                Map.Entry<String, Integer> o2) {
-                return (o1.getValue()).compareTo(o2.getValue());
+                return (o2.getValue()).compareTo(o1.getValue());
             }
         });
         // Convert sorted maptobeSorted back to a Map

@@ -10,7 +10,6 @@ public class Scoped_Profile {
     String name;
 
 
-
     int mutual_likes;
     int mutual_friends;
 
@@ -21,6 +20,8 @@ public class Scoped_Profile {
         this.mutual_friends = mutual_friends;
         this.name = name;
     }
+
+
 
     public String getName() {
         return name;
