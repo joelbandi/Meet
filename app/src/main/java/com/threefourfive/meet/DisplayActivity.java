@@ -38,7 +38,7 @@ public class DisplayActivity extends AppCompatActivity {
     ListView lv;
     String my_id;
     String accesstoken;
-    private static final String P2P_APP_KEY = "eyJzaWduYXR1cmUiOiJCYnZiSGI2SGw4b0h4OUdEbWxRU0VzQ0ZRUnorQzZLeHQzOFBGajRYV1JjZ1lwRU1RSmRhKzc4UjRsY0NHays3aTVtc0xSaWplZmlBaDI3WEhnaDJtVHhEOUNWRkxWSllISkVIMWFYQTB2VTd2eFF1NlJKcktJUFhlZGR5Z2NML0gyTXBEVWVSUmdCRHVhZ1pOUHJEN1JRRU9DNWhiRHNwTG92Q3gzWE40UTQ9IiwiYXBwSWQiOjE2MDYsInZhbGlkVW50aWwiOjE3MDIwLCJhcHBVVVVJRCI6IkFGMERGMDg5LUREMTUtNDcwOS05NEI3LUFEMjkxODQ5MkQwNiJ9";
+    private static final String P2P_APP_KEY = "Token_here_P2P";
     ArrayList<String> cache;
     HashMap<String, Integer> maptobeSorted = new HashMap<String, Integer>();
     HashMap<String, Scoped_Profile> mapProfiles = new HashMap<String, Scoped_Profile>();
